@@ -85,7 +85,7 @@ public:
     friend Matrix<U> operator*(Matrix<U> lhs, const Matrix<U>& rhs);
 public:
     constexpr TwoDVector<T>& get_matrix() noexcept;
-    constexpr TwoDVector<T> get_matrix() const noexcept;
+    constexpr const TwoDVector<T>& get_matrix() const noexcept;
     constexpr bool set_matrix(TwoDVector<T> other) noexcept;
     constexpr unsigned int rows() const noexcept;
     constexpr unsigned int cols() const noexcept;
@@ -336,16 +336,12 @@ constexpr Matrix<T>& Matrix<T>::reduceToRowEchelonForm() {
     }
     for (unsigned int i = 0; i < rows() - zero_rows_count - 1; ++i) {
         for (unsigned int j = i + 1; j < rows() - zero_rows_count; ++j) {
-            std::cout << "Modifying matrix[" << i << "][" << j << "]" << std::endl;
-            std::cout << "["<< i << "][" << i << "]: " << get_matrix()[i][zero_cols_count + i] << std::endl;
             if (get_matrix()[i][zero_cols_count + i] != 0) {
                 addMultipleOfRow(j, i, (-1) * get_matrix()[j][zero_cols_count + i] / 
                                         get_matrix()[i][zero_cols_count + i]);
             }
-            print();
         }
     }
-    std::cout << "\n\n\n";
     swapNonZeroRowsToTop();
     swapNonZeroColumnsToLeft();
     // print();
@@ -361,11 +357,11 @@ constexpr std::vector<T> Matrix<T>::gaussEliminationMethod() {
     
     unsigned int last_row_check = tmp.rows() - zero_rows_count - 1;
     if (tmp.get_matrix()[last_row_check][tmp.cols() - 2] == 0) {
-        std::cout << "There is no solution for this system of equations." << std::endl;
+        std::cerr << "There is no solution for this system of equations." << std::endl;
         return std::vector<T>();
     }
     if (tmp.rows() - zero_rows_count + 1 != tmp.cols() - zero_cols_count) {
-        std::cout << "There are infinite number of solution to this system of equations" << std::endl;
+        std::cerr << "There are infinite number of solution to this system of equations" << std::endl;
         return std::vector<T>();
     }
     
@@ -456,7 +452,7 @@ constexpr TwoDVector<T>& Matrix<T>::get_matrix() noexcept {
 }
 
 template <Field T>
-constexpr TwoDVector<T> Matrix<T>::get_matrix() const noexcept {
+constexpr const TwoDVector<T>& Matrix<T>::get_matrix() const noexcept {
     return m_matrix;
 }
 
