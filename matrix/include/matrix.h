@@ -85,7 +85,7 @@ public:
     friend Matrix<U> operator*(Matrix<U> lhs, const Matrix<U>& rhs);
 public:
     constexpr TwoDVector<T>& get_matrix() noexcept;
-    constexpr const TwoDVector<T>& get_matrix() const noexcept;
+    constexpr const TwoDVector<T> get_matrix() const noexcept;
     constexpr bool set_matrix(TwoDVector<T> other) noexcept;
     constexpr unsigned int rows() const noexcept;
     constexpr unsigned int cols() const noexcept;
@@ -452,7 +452,7 @@ constexpr TwoDVector<T>& Matrix<T>::get_matrix() noexcept {
 }
 
 template <Field T>
-constexpr const TwoDVector<T>& Matrix<T>::get_matrix() const noexcept {
+constexpr const TwoDVector<T> Matrix<T>::get_matrix() const noexcept {
     return m_matrix;
 }
 
