@@ -1,9 +1,9 @@
 #pragma once
 
-#include "abstract_graph.h"
+#include "abstract_graph.hpp"
 
 template <class T>
-class Graph : public AbstractGraph<T>
+class Graph : public AbstractGraph<T, unsigned int>
 {
 public:
     Graph();
@@ -21,21 +21,21 @@ public:
 
 
 template <class T>
-Graph<T>::Graph() : AbstractGraph<T>() {}
+Graph<T>::Graph() : AbstractGraph<T, unsigned int>() {}
 
 template <class T>
-Graph<T>::Graph(int num) : AbstractGraph<T>(num) {}
+Graph<T>::Graph(int num) : AbstractGraph<T, unsigned int>(num) {}
 
 template <class T>
-Graph<T>::Graph(const Graph<T>& other) : AbstractGraph<T>(other) {}
+Graph<T>::Graph(const Graph<T>& other) : AbstractGraph<T, unsigned int>(other) {}
 
 template <class T>
-Graph<T>::Graph(const Graph<T>&& other) : AbstractGraph<T>(other) {}
+Graph<T>::Graph(const Graph<T>&& other) : AbstractGraph<T, unsigned int>(other) {}
 
 template <class T>
 constexpr Graph<T>& Graph<T>::operator=(const Graph<T>& other) noexcept {
     if (this != &other) {
-        AbstractGraph<T>::operator=(other);
+        AbstractGraph<T, unsigned int>::operator=(other);
     }
     return *this;
 }
@@ -43,7 +43,7 @@ constexpr Graph<T>& Graph<T>::operator=(const Graph<T>& other) noexcept {
 template <class T>
 constexpr Graph<T>& Graph<T>::operator=(const Graph<T>&& other) noexcept {
     if (this != &other) {
-        AbstractGraph<T>::operator=(std::move(other));
+        AbstractGraph<T, unsigned int>::operator=(std::move(other));
     }
     return *this;
 }

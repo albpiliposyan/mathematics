@@ -1,6 +1,8 @@
 #include <iostream>
-#include "graph.h"
-#include "directed_graph.h"
+#include <string>
+#include "graph.hpp"
+#include "weighted_graph.hpp"
+#include "directed_graph.hpp"
 
 
 int main() {
@@ -13,6 +15,7 @@ int main() {
     graph.print();
     std::cout << std::endl;
 
+
     DirectedGraph<char> directed_graph(5);
     directed_graph.add_edge(0, 1);
     directed_graph.add_edge(0, 2);
@@ -21,6 +24,8 @@ int main() {
     directed_graph.add_edge(2, 3);
     directed_graph.add_edge(4, 2);
     directed_graph.print();
+
+    // WeightedGraph<int, std::string> weighted_graph(5);
 
 
     return 0;

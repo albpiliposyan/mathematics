@@ -1,9 +1,9 @@
 #pragma once
 
-#include "abstract_graph.h"
+#include "abstract_graph.hpp"
 
-template <class T = int>
-class DirectedGraph : public AbstractGraph<T>
+template <class T = char>
+class DirectedGraph : public AbstractGraph<T, unsigned int>
 {
 public:
     DirectedGraph();
@@ -21,23 +21,23 @@ public:
 
 
 template <class T>
-DirectedGraph<T>::DirectedGraph() : AbstractGraph<T>() {}
+DirectedGraph<T>::DirectedGraph() : AbstractGraph<T, unsigned int>() {}
 
 template <class T>
-DirectedGraph<T>::DirectedGraph(int num) : AbstractGraph<T>(num) {}
+DirectedGraph<T>::DirectedGraph(int num) : AbstractGraph<T, unsigned int>(num) {}
 
 template <class T>
 DirectedGraph<T>::DirectedGraph(const DirectedGraph<T>& other)
-    : AbstractGraph<T>(other) {}
+    : AbstractGraph<T, unsigned int>(other) {}
 
 template <class T>
 DirectedGraph<T>::DirectedGraph(const DirectedGraph<T>&& other)
-    : AbstractGraph<T>(other) {}
+    : AbstractGraph<T, unsigned int>(other) {}
 
 template <class T>
 constexpr DirectedGraph<T>& DirectedGraph<T>::operator=(const DirectedGraph<T>& other) noexcept {
     if (this != &other) {
-        AbstractGraph<T>::operator=(other);
+        AbstractGraph<T, unsigned int>::operator=(other);
     }
     return *this;
 }
@@ -45,7 +45,7 @@ constexpr DirectedGraph<T>& DirectedGraph<T>::operator=(const DirectedGraph<T>& 
 template <class T>
 constexpr DirectedGraph<T>& DirectedGraph<T>::operator=(const DirectedGraph<T>&& other) noexcept {
     if (this != &other) {
-        AbstractGraph<T>::operator=(std::move(other));
+        AbstractGraph<T, unsigned int>::operator=(std::move(other));
     }
     return *this;
 }
