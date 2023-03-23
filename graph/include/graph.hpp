@@ -16,7 +16,39 @@ public:
     constexpr Graph<T>& operator=(const Graph<T>&& other) noexcept;
 public:
     constexpr bool add_edge(const unsigned int& ver1, const unsigned int& ver2) override;
+    constexpr bool remove_edge(const unsigned int ver1, const unsigned int ver2) override;
+    constexpr bool is_tree() const noexcept;
+    constexpr std::vector<unsigned int> cayley_representation() const;
 };
+
+
+template <class T>
+constexpr std::vector<unsigned int> Graph<T>::cayley_representation() const {
+    std::vector<unsigned int> result;
+    if (this->get_number_of_vertices() <= 2) {
+        return result; 
+    }
+    if (!this->is_tree()) {
+        // throw an error
+        return result;
+    }
+    Graph tmp(*this);
+    unsigned int n = this->get_number_of_vertices();
+    result.reserve(n - 2);
+    std::vector<bool> check_used(n, false);
+    for(unsigned int i = 0; i < n - 2; ++i) {
+        unsigned int j = 0;
+        for (j = 0; j < n; ++j) {
+            if (tmp.get_adjacency_list()[j].size() == 1) {
+                break;
+            }
+        }
+        result.push_back(j);
+        unsigned int index = tmp.get_adjacency_list()[j].front();
+        tmp.remove_edge(j, index);
+    }
+    return result;
+}
 
 
 
@@ -67,5 +99,30 @@ constexpr bool Graph<T>::add_edge(const unsigned int& ver1, const unsigned int& 
         throw std::invalid_argument("Edge already exists");
     }
     list_to_insert_2.insert(it, ver1);
+    return true;
+}
+
+template <class T>
+constexpr bool Graph<T>::remove_edge(const unsigned int ver1, const unsigned int ver2) {
+    if (ver1 >= this->get_number_of_vertices() || ver2 >= this->get_number_of_vertices()) {
+        throw std::invalid_argument("Invalid vertices provided");
+    }
+    this->get_adjacency_list()[ver1].remove(ver2);
+    this->get_adjacency_list()[ver2].remove(ver1);
+    return true;
+}
+
+template <class T>
+constexpr bool Graph<T>::is_tree() const noexcept {
+    // G(m, n)
+    // check n = m - 1
+    // there is no 
+    // TODO
+    return true;
+    for (auto& el : this->get_adjacency_list()) {
+        if (el.size() > 2) {
+            return false;
+        }
+    }
     return true;
 }

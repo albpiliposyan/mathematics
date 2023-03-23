@@ -20,8 +20,8 @@ public:
     AbstractGraph(const AbstractGraph<T, U>&& other);
     virtual ~AbstractGraph();
 public:
-    constexpr virtual bool add_edge(const unsigned int& ver1, const unsigned int& ver2) = 0;
-    // remove edge
+    constexpr virtual bool add_edge(const unsigned int& ver1, const unsigned int& ver3) = 0;
+    constexpr virtual bool remove_edge(const unsigned int ver1, const unsigned int ver2) {return false;}
     constexpr virtual bool add_vertice(const T& item);
     constexpr virtual bool add_vertice();
     // remove vertice
@@ -38,8 +38,8 @@ public:
     constexpr const adjacency_list_container<U> get_adjacency_list() const noexcept;
 private:
     unsigned int m_number_of_vertices;
-    std::vector<T> m_vertices;
     adjacency_list_container<U> m_adjacency_list;
+    std::vector<T> m_vertices;
 };
 
 

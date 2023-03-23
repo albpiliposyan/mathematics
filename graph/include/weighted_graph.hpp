@@ -17,16 +17,38 @@ public:
     constexpr WeightedGraph<T, U>& operator=(const WeightedGraph<T, U>&& other) noexcept;
 public:
     constexpr bool print() noexcept;
-    // TODO
-    constexpr bool add_edge(const unsigned int& ver1, const unsigned int& ver2) override;
-    constexpr bool set_number_of_vertices(const unsigned int num) noexcept override;
+    constexpr bool add_edge(const unsigned int& ver1, const unsigned int& ver2)  override;
+    constexpr bool add_edge(const unsigned int& ver1, const unsigned int& ver2, const U& weight);
 };
 
-// template <class T, class U>
-// constexpr bool WeightedGraph<T, U>::add_edge(const unsigned int& ver1, const unsigned int& ver2) {return true;}
-// 
-// template <class T, class U>
-// constexpr bool WeightedGraph<T, U>::set_number_of_vertices(const unsigned int num) noexcept {return true;}
+template <class T, class U>
+constexpr bool WeightedGraph<T, U>::add_edge(const unsigned int& ver1, const unsigned int& ver2) {
+    throw std::invalid_argument("The weighted class requires an edge weight as third argument.");
+    return false;
+}
+
+template <class T, class U>
+constexpr bool WeightedGraph<T, U>::add_edge(const unsigned int& ver1, const unsigned int& ver2, const U& weight) {
+    if (ver1 >= this->get_number_of_vertices() || ver2 >= this->get_number_of_vertices()) {
+        throw std::invalid_argument("Invalid vertices provided");
+    }
+    auto& list_to_insert_1 = this->get_adjacency_list()[ver1];
+    auto it = std::lower_bound(list_to_insert_1.begin(), list_to_insert_1.end(), std::make_pair(ver2, weight));
+    if (it != list_to_insert_1.end() && it->first == ver2) {
+        throw std::invalid_argument("Edge already exists");
+    }
+    list_to_insert_1.insert(it, std::make_pair(ver2, weight));
+
+    auto& list_to_insert_2 = this->get_adjacency_list()[ver2];
+    it = std::lower_bound(list_to_insert_2.begin(), list_to_insert_2.end(), std::make_pair(ver1, weight));
+    if (it != list_to_insert_2.end() && it->first == ver1) {
+        throw std::invalid_argument("Edge already exists");
+    }
+    list_to_insert_2.insert(it, std::make_pair(ver1, weight));
+    return true;
+}
+
+
 
 template <class T, class U>
 WeightedGraph<T, U>::WeightedGraph() : AbstractGraph<T, std::pair<unsigned int, U> >() {}

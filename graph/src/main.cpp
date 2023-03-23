@@ -6,27 +6,45 @@
 
 
 int main() {
-    Graph<char> graph(5);
-    graph.add_edge(0, 2);
-    graph.add_edge(0, 4);
-    graph.add_edge(1, 3);
-    graph.add_edge(2, 3);
-    graph.add_vertice('a');
-    graph.print();
+    std::cout << "Graph" << std::endl;
+    Graph<char> g(9);
+    g.add_edge(0, 1);
+    g.add_edge(1, 2);
+    g.add_edge(2, 3);
+    g.add_edge(2, 4);
+    g.add_edge(2, 5);
+    g.add_edge(4, 6);
+    g.add_edge(5, 7);
+    g.add_edge(7, 8);
+    g.print();
+    std::cout << "Cayley representation: ";
+    std::vector<unsigned int> cayley_result = g.cayley_representation();
+    for (unsigned int& el : cayley_result) {
+        std::cout << el;
+    }
+    std::cout << std::endl;
     std::cout << std::endl;
 
 
-    DirectedGraph<char> directed_graph(5);
-    directed_graph.add_edge(0, 1);
-    directed_graph.add_edge(0, 2);
-    directed_graph.add_edge(0, 4);
-    directed_graph.add_edge(1, 4);
-    directed_graph.add_edge(2, 3);
-    directed_graph.add_edge(4, 2);
-    directed_graph.print();
+    std::cout << "Directed Graph" << std::endl;
+    DirectedGraph<char> dg(5);
+    dg.add_edge(0, 1);
+    dg.add_edge(0, 2);
+    dg.add_edge(0, 4);
+    dg.add_edge(1, 4);
+    dg.add_edge(2, 3);
+    dg.add_edge(4, 2);
+    dg.print();
+    std::cout << std::endl;
 
-    // WeightedGraph<int, std::string> weighted_graph(5);
+    std::cout << "Weighted Graph" << std::endl;
+    WeightedGraph<int, std::string> wg(5);
+    wg.add_edge(0, 1, "test1");
+    wg.add_edge(0, 2, "test2");
+    wg.add_edge(1, 2, "test3");
+    wg.add_edge(3, 4, "test4");
 
+    wg.print();
 
     return 0;
 }
