@@ -28,16 +28,21 @@ Matrix<U> operator+(Matrix<U> lhs, const Matrix<U>& rhs) {
     lhs += rhs;
     return lhs;
 }
+
+
 template <Field U>
  Matrix<U> operator-(Matrix<U> lhs, const Matrix<U>& rhs) {
     lhs -= rhs;
     return lhs;
 }
+
+
 template <Field U>
  Matrix<U> operator*(Matrix<U> lhs, const Matrix<U>& rhs) {
     lhs *= rhs;
     return lhs;
 }
+
 
 
 template <Field T>
@@ -68,6 +73,7 @@ public:
     constexpr bool swapNonZeroColumnsToLeft() noexcept;
     constexpr Matrix<T>& reduceToRowEchelonForm();
     constexpr std::vector<T> gaussEliminationMethod();
+    constexpr Matrix<T> cholesky_decomposition();
 public:
     constexpr Matrix<T>& operator=(const Matrix<T>& other) noexcept;
     constexpr Matrix<T>& operator=(const Matrix<T>&& other) noexcept;
@@ -111,6 +117,7 @@ constexpr bool Matrix<T>::initialize() {
     return true;
 }
 
+
 template <Field T>
 constexpr bool Matrix<T>::print() noexcept {
     for (const std::vector<T>& row : get_matrix()) {
@@ -121,6 +128,7 @@ constexpr bool Matrix<T>::print() noexcept {
     }
     return true;
 }
+
 
 template <Field T>
 constexpr T Matrix<T>::determinant() const {
@@ -144,6 +152,7 @@ constexpr T Matrix<T>::determinant() const {
     return det;
 }
 
+
 template <Field T>
 constexpr T Matrix<T>::cofactor(const unsigned int& row, const unsigned int& col) const {
     Matrix<T> submatrix(rows() - 1, cols() - 1);
@@ -166,6 +175,7 @@ constexpr T Matrix<T>::cofactor(const unsigned int& row, const unsigned int& col
     return ((row + col) % 2 == 0 ? 1 : -1) * det;
 }
 
+
 template <Field T>
 constexpr Matrix<T>& Matrix<T>::transpose() noexcept {
     TwoDVector<T> transposed(cols(), std::vector<T>(rows()));
@@ -178,6 +188,7 @@ constexpr Matrix<T>& Matrix<T>::transpose() noexcept {
     return *this;
 }
 
+
 template <Field T>
 constexpr Matrix<T>& Matrix<T>::swapRows(const unsigned int& row1, const unsigned int& row2) {
     if (row1 < 0 || row1 >= rows() || row2 < 0 || row2 >= rows())
@@ -185,6 +196,7 @@ constexpr Matrix<T>& Matrix<T>::swapRows(const unsigned int& row1, const unsigne
     std::swap(get_matrix()[row1], get_matrix()[row2]);
     return *this;
 }
+
 
 template <Field T>
 constexpr Matrix<T>& Matrix<T>::swapColumns(const unsigned int& col1, const unsigned int& col2) {
@@ -194,6 +206,7 @@ constexpr Matrix<T>& Matrix<T>::swapColumns(const unsigned int& col1, const unsi
         std::swap(m_matrix[i][col1], m_matrix[i][col2]);
     return *this;
 }
+
 
 template <Field T>
 constexpr Matrix<T>& Matrix<T>::multiply(const T& scalar) {
@@ -207,6 +220,7 @@ constexpr Matrix<T>& Matrix<T>::multiply(const T& scalar) {
     }
     return *this;
 }
+
 
 template <Field T>
 constexpr Matrix<T>& Matrix<T>::multiplyRow(const unsigned int& row, const T& scalar) {
@@ -222,6 +236,7 @@ constexpr Matrix<T>& Matrix<T>::multiplyRow(const unsigned int& row, const T& sc
     return *this;
 }
 
+
 template <Field T>
 constexpr Matrix<T>& Matrix<T>::addMultipleOfRow(const unsigned int& row1, 
                     const unsigned int& row2, const T& scalar) {
@@ -236,6 +251,8 @@ constexpr Matrix<T>& Matrix<T>::addMultipleOfRow(const unsigned int& row1,
     }
     return *this;
 }
+
+
 template <Field T>
 constexpr bool Matrix<T>::checkZeroRow(const unsigned int row) const noexcept {
     for (unsigned int i = 0; i < cols(); ++i) {
@@ -246,6 +263,7 @@ constexpr bool Matrix<T>::checkZeroRow(const unsigned int row) const noexcept {
     return true;
 }
 
+
 template <Field T>
 constexpr bool Matrix<T>::checkZeroColumn(const unsigned int col) const noexcept{
     for (unsigned int i = 0; i < rows(); ++i) {
@@ -255,6 +273,7 @@ constexpr bool Matrix<T>::checkZeroColumn(const unsigned int col) const noexcept
     }
     return true;
 }
+
 
 template <Field T>
 constexpr bool Matrix<T>::swapNonZeroRowsToTop() noexcept {
@@ -267,6 +286,7 @@ constexpr bool Matrix<T>::swapNonZeroRowsToTop() noexcept {
     return true;
 }
 
+
 template <Field T>
 constexpr bool Matrix<T>::swapNonZeroColumnsToLeft() noexcept {
     unsigned int col_index = 0;
@@ -277,6 +297,7 @@ constexpr bool Matrix<T>::swapNonZeroColumnsToLeft() noexcept {
     }
     return true;
 }
+
 
 template <Field T>
 constexpr unsigned int Matrix<T>::numberOfZeroRows() const noexcept {
@@ -295,6 +316,7 @@ constexpr unsigned int Matrix<T>::numberOfZeroRows() const noexcept {
     return count;
 }
 
+
 template <Field T>
 constexpr unsigned int Matrix<T>::numberOfZeroColumns() const noexcept {
     unsigned int count = 0, col_zeroes;
@@ -311,6 +333,7 @@ constexpr unsigned int Matrix<T>::numberOfZeroColumns() const noexcept {
     }
     return count;
 }
+
 
 template <Field T>
 constexpr Matrix<T>& Matrix<T>::reduceToRowEchelonForm() {
@@ -348,6 +371,7 @@ constexpr Matrix<T>& Matrix<T>::reduceToRowEchelonForm() {
     return *this;
 }
 
+
 template <Field T>
 constexpr std::vector<T> Matrix<T>::gaussEliminationMethod() {
     Matrix tmp(*this);
@@ -381,6 +405,40 @@ constexpr std::vector<T> Matrix<T>::gaussEliminationMethod() {
 }
 
 
+template <Field T>
+constexpr Matrix<T> Matrix<T>::cholesky_decomposition() {
+    if (rows() != cols()) {
+        throw std::invalid_argument("The matrix must be a square matrix for cholesky decomposition.");
+    }
+    const int n = rows();
+    Matrix<double> U(n, n);
+
+    U.get_matrix()[0][0] = sqrt(get_matrix()[0][0]);
+
+    for (int i = 1; i < n; ++i) {
+        U.get_matrix()[0][i] = get_matrix()[0][i] / U.get_matrix()[0][0];
+    }
+
+    double tmp_sum;
+    for (int i = 1; i < n; ++i) {
+        tmp_sum = 0;
+        for (int k = 0; k < i; ++k) {
+            tmp_sum += U.get_matrix()[k][i] * U.get_matrix()[k][i];
+        }
+        U.get_matrix()[i][i] = sqrt(get_matrix()[i][i] - tmp_sum);
+
+        for (int j = i + 1; j < n; ++j) {
+            tmp_sum = 0;
+            for (int k = 0; k < i; ++k) {
+                tmp_sum += U.get_matrix()[k][i] * U.get_matrix()[k][j];
+            }
+            U.get_matrix()[i][j] = (get_matrix()[i][j] - tmp_sum) / U.get_matrix()[i][i];
+        }
+    }
+
+    return U;
+}
+
 
 template <Field T>
 constexpr Matrix<T>& Matrix<T>::operator=(const Matrix<T>& other) noexcept {
@@ -390,6 +448,7 @@ constexpr Matrix<T>& Matrix<T>::operator=(const Matrix<T>& other) noexcept {
     return *this;
 }
 
+
 template <Field T>
 constexpr Matrix<T>& Matrix<T>::operator=(const Matrix<T>&& other) noexcept {
     if (this != &other) {
@@ -397,6 +456,7 @@ constexpr Matrix<T>& Matrix<T>::operator=(const Matrix<T>&& other) noexcept {
     }
     return *this;
 }
+
 
 template <Field T>
 constexpr Matrix<T>& Matrix<T>::operator+=(const Matrix<T>& rhs) {
@@ -409,6 +469,8 @@ constexpr Matrix<T>& Matrix<T>::operator+=(const Matrix<T>& rhs) {
     }
     return *this;
 }
+
+
 template <Field T>
 constexpr Matrix<T>& Matrix<T>::operator-=(const Matrix<T>& rhs) {
     if (rows() != rhs.rows() || cols() != rhs.cols())
@@ -421,23 +483,27 @@ constexpr Matrix<T>& Matrix<T>::operator-=(const Matrix<T>& rhs) {
     return *this;
 }
 
+
 template <Field T>
 constexpr Matrix<T>& Matrix<T>::operator*=(const Matrix<T>& rhs) {
     if (rows() != rhs.cols())
         throw std::invalid_argument("Matrix sizes don't match");
-    TwoDVector<T> result(rows(), std::vector<T>(rhs.cols(), 0));
-    for (unsigned int i = 0; i < result.size(); ++i)
-        for (unsigned int j = 0; j < result[0].size(); ++j)
+    Matrix<T> result(rows(), rhs.cols());
+    for (unsigned int i = 0; i < result.rows(); ++i)
+        for (unsigned int j = 0; j < result.cols(); ++j)
             for (unsigned int k = 0; k < cols(); ++k)
                 result[i][j] += get_matrix()[i][k] * rhs[k][j];
-    set_matrix(result);
+    // set_matrix(result);
+    *this = result;
     return *this;
 }
+
 
 template <Field T>
 constexpr std::vector<T>& Matrix<T>::operator[](int row) noexcept {
     return m_matrix[row];
 }
+
 
 template <Field T>
 const constexpr std::vector<T>& Matrix<T>::operator[](int row) const noexcept {
@@ -445,16 +511,17 @@ const constexpr std::vector<T>& Matrix<T>::operator[](int row) const noexcept {
 }
 
 
-
 template <Field T>
 constexpr TwoDVector<T>& Matrix<T>::get_matrix() noexcept {
     return m_matrix;
 }
 
+
 template <Field T>
 constexpr const TwoDVector<T> Matrix<T>::get_matrix() const noexcept {
     return m_matrix;
 }
+
 
 template <Field T>
 constexpr bool Matrix<T>::set_matrix(TwoDVector<T> other)  noexcept {
@@ -462,21 +529,25 @@ constexpr bool Matrix<T>::set_matrix(TwoDVector<T> other)  noexcept {
     return true;
 }
 
+
 template <Field T>
 constexpr unsigned int Matrix<T>::rows() const noexcept {
     return m_rows;
 }
+
 
 template <Field T>
 constexpr unsigned int Matrix<T>::cols() const noexcept {
     return m_cols;
 }
 
+
 template <Field T>
 constexpr bool Matrix<T>::set_rows(unsigned int row) noexcept {
     this->get_matrix().resize(row);
     return true;
 }
+
 
 template <Field T>
 constexpr bool Matrix<T>::set_cols(unsigned int col) noexcept {
@@ -485,3 +556,6 @@ constexpr bool Matrix<T>::set_cols(unsigned int col) noexcept {
     }
     return true;
 }
+
+
+

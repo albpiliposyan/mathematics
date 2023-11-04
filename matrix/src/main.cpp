@@ -1,23 +1,32 @@
 #include <iostream>
 #include "matrix.h"
-    // TODO C++20 modules instead of headers
+
+// TODO C++20 modules instead of headers
 
 int main() {
-    Matrix<double> matrix(4, 5);
-    matrix.initialize();
-    std::cout << std::endl;
-    // std::cout << matrix.determinant() << std::endl;
-    
-    std::vector<double> solution = matrix.gaussEliminationMethod();
-    
-    if (solution.size() != 0) {
-        std::cout << "The solutions to the system of linear equations are: " << std::endl;
-        for (double& element : solution) {
-            std::cout << element << " ";
-        }
-        std::cout << std::endl;
-    }
 
-    // matrix.print();
+    // // matrix.print();
+    Matrix<double> a(3,3);
+    std::cout << "Enter 3x3 A:" << std::endl;
+    a.initialize();
+
+    Matrix<double> u = a.cholesky_decomposition();
+    std::cout << std::endl;
+
+    std::cout << "U:" << std::endl;
+    u.print();
+    std::cout << std::endl;
+
+    Matrix<double> u_t = u.transpose();
+    std::cout << "U_t:" << std::endl;
+    u_t.print();
+    std::cout << std::endl;
+
+    Matrix<double> c = u_t * u;
+
+    std::cout << "C:" << std::endl;
+    c.print();
+
+
     return 0;
 }
