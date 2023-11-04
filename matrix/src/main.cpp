@@ -17,16 +17,5 @@ int main() {
     u.print();
     std::cout << std::endl;
 
-    Matrix<double> u_t = u.transpose();
-    std::cout << "U_t:" << std::endl;
-    u_t.print();
-    std::cout << std::endl;
-
-    Matrix<double> c = u_t * u;
-
-    std::cout << "C:" << std::endl;
-    c.print();
-
-
     return 0;
 }
