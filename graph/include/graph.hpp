@@ -18,12 +18,12 @@ public:
     constexpr bool add_edge(const unsigned int& ver1, const unsigned int& ver2) override;
     constexpr bool remove_edge(const unsigned int ver1, const unsigned int ver2) override;
     constexpr bool is_tree() const noexcept;
-    constexpr std::vector<unsigned int> cayley_representation() const;
+    std::vector<unsigned int> cayley_representation() const;
 };
 
 
 template <class T>
-constexpr std::vector<unsigned int> Graph<T>::cayley_representation() const {
+std::vector<unsigned int> Graph<T>::cayley_representation() const {
     std::vector<unsigned int> result;
     if (this->get_number_of_vertices() <= 2) {
         return result; 

@@ -63,7 +63,7 @@ std::pair<int, int> chinese(std::vector<int> A, std::vector<int> M) {
 
 	for (int i = 0; i < size; ++i) {
 		float tmp = N_prod / M[i];
-		N.push_back(N_prod / M[i]);
+		N.push_back(tmp);
 	}
 
 	for (int i = 0; i < size; ++i)

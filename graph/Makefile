@@ -1,4 +1,4 @@
-CXX = g++ 
+CXX = clang++ 
 CXXFLAGS = -g -Wall -std=c++2a
 SOURCES = $(wildcard src/*.cpp)
 OBJECTS = $(SOURCES:src/%.cpp=build/%.o)
