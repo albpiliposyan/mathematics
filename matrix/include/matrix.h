@@ -58,12 +58,12 @@ public:
     constexpr bool initialize();
     constexpr bool print() noexcept;
     constexpr T determinant() const;
-    constexpr Matrix<T>& transpose() noexcept;
-    constexpr Matrix<T>& swapRows(const unsigned int& row1, const unsigned int& row2);
-    constexpr Matrix<T>& swapColumns(const unsigned int& col1, const unsigned int& col2);
-    constexpr Matrix<T>& multiply(const T& scalar);
-    constexpr Matrix<T>& multiplyRow(const unsigned int& row, const T& scalar);
-    constexpr Matrix<T>& addMultipleOfRow(const unsigned int& row1,
+    Matrix<T>& transpose() noexcept;
+    Matrix<T>& swapRows(const unsigned int& row1, const unsigned int& row2);
+    Matrix<T>& swapColumns(const unsigned int& col1, const unsigned int& col2);
+    Matrix<T>& multiply(const T& scalar);
+    Matrix<T>& multiplyRow(const unsigned int& row, const T& scalar);
+    Matrix<T>& addMultipleOfRow(const unsigned int& row1,
                         const unsigned int& row2, const T& scalar);
     constexpr bool checkZeroRow(const unsigned int row) const noexcept;
     constexpr bool checkZeroColumn(const unsigned int col) const noexcept;
@@ -71,9 +71,11 @@ public:
     constexpr unsigned int numberOfZeroColumns() const noexcept;
     constexpr bool swapNonZeroRowsToTop() noexcept;
     constexpr bool swapNonZeroColumnsToLeft() noexcept;
-    constexpr Matrix<T>& reduceToRowEchelonForm();
+    Matrix<T>& reduceToRowEchelonForm();
     constexpr std::vector<T> gaussEliminationMethod();
-    constexpr Matrix<T> cholesky_decomposition();
+    Matrix<T> cholesky_decomposition();
+    constexpr std::vector<Matrix<T>> crout_decomposition();
+    constexpr std::vector<T> jacobi_method(std::vector<T>, const double);
 public:
     constexpr Matrix<T>& operator=(const Matrix<T>& other) noexcept;
     constexpr Matrix<T>& operator=(const Matrix<T>&& other) noexcept;
@@ -99,6 +101,7 @@ public:
     constexpr bool set_cols(unsigned int col) noexcept;
 private:
     constexpr T cofactor(const unsigned int& row, const unsigned int& col) const;
+    constexpr double vector_max_diff(const std::vector<T>, const std::vector<T>);
 private:
     unsigned int m_rows;
     unsigned int m_cols;
@@ -177,7 +180,7 @@ constexpr T Matrix<T>::cofactor(const unsigned int& row, const unsigned int& col
 
 
 template <Field T>
-constexpr Matrix<T>& Matrix<T>::transpose() noexcept {
+Matrix<T>& Matrix<T>::transpose() noexcept {
     TwoDVector<T> transposed(cols(), std::vector<T>(rows()));
     for (unsigned int i = 0; i < rows(); ++i) {
         for (unsigned int j = 0; j < cols(); ++j) {
@@ -190,7 +193,7 @@ constexpr Matrix<T>& Matrix<T>::transpose() noexcept {
 
 
 template <Field T>
-constexpr Matrix<T>& Matrix<T>::swapRows(const unsigned int& row1, const unsigned int& row2) {
+Matrix<T>& Matrix<T>::swapRows(const unsigned int& row1, const unsigned int& row2) {
     if (row1 < 0 || row1 >= rows() || row2 < 0 || row2 >= rows())
         throw std::out_of_range("Invalid row index");
     std::swap(get_matrix()[row1], get_matrix()[row2]);
@@ -199,7 +202,7 @@ constexpr Matrix<T>& Matrix<T>::swapRows(const unsigned int& row1, const unsigne
 
 
 template <Field T>
-constexpr Matrix<T>& Matrix<T>::swapColumns(const unsigned int& col1, const unsigned int& col2) {
+Matrix<T>& Matrix<T>::swapColumns(const unsigned int& col1, const unsigned int& col2) {
     if (col1 < 0 || col1 >= cols() || col2 < 0 || col2 >= cols())
         throw std::out_of_range("Invalid column index");
     for (unsigned int i = 0; i < rows(); ++i)
@@ -209,7 +212,7 @@ constexpr Matrix<T>& Matrix<T>::swapColumns(const unsigned int& col1, const unsi
 
 
 template <Field T>
-constexpr Matrix<T>& Matrix<T>::multiply(const T& scalar) {
+Matrix<T>& Matrix<T>::multiply(const T& scalar) {
     if (scalar == 0) {
         throw std::invalid_argument("The scalar must be non-zero");
     }
@@ -223,7 +226,7 @@ constexpr Matrix<T>& Matrix<T>::multiply(const T& scalar) {
 
 
 template <Field T>
-constexpr Matrix<T>& Matrix<T>::multiplyRow(const unsigned int& row, const T& scalar) {
+Matrix<T>& Matrix<T>::multiplyRow(const unsigned int& row, const T& scalar) {
     if (scalar == 0) {
         throw std::invalid_argument("The scalar must be non-zero");
     }
@@ -238,7 +241,7 @@ constexpr Matrix<T>& Matrix<T>::multiplyRow(const unsigned int& row, const T& sc
 
 
 template <Field T>
-constexpr Matrix<T>& Matrix<T>::addMultipleOfRow(const unsigned int& row1, 
+Matrix<T>& Matrix<T>::addMultipleOfRow(const unsigned int& row1, 
                     const unsigned int& row2, const T& scalar) {
     if (scalar == 0) {
         throw std::invalid_argument("The scalar must be non-zero");
@@ -336,7 +339,7 @@ constexpr unsigned int Matrix<T>::numberOfZeroColumns() const noexcept {
 
 
 template <Field T>
-constexpr Matrix<T>& Matrix<T>::reduceToRowEchelonForm() {
+Matrix<T>& Matrix<T>::reduceToRowEchelonForm() {
     unsigned int zero_rows_count = numberOfZeroRows();
     if (zero_rows_count == rows()) {
         return *this;
@@ -406,12 +409,12 @@ constexpr std::vector<T> Matrix<T>::gaussEliminationMethod() {
 
 
 template <Field T>
-constexpr Matrix<T> Matrix<T>::cholesky_decomposition() {
+Matrix<T> Matrix<T>::cholesky_decomposition() {
     if (rows() != cols()) {
         throw std::invalid_argument("The matrix must be a square matrix for cholesky decomposition.");
     }
     const int n = rows();
-    Matrix<double> U(n, n);
+    Matrix<T> U(n, n);
 
     U.get_matrix()[0][0] = sqrt(get_matrix()[0][0]);
 
@@ -544,18 +547,108 @@ constexpr unsigned int Matrix<T>::cols() const noexcept {
 
 template <Field T>
 constexpr bool Matrix<T>::set_rows(unsigned int row) noexcept {
-    this->get_matrix().resize(row);
+    get_matrix().resize(row);
     return true;
 }
 
 
 template <Field T>
 constexpr bool Matrix<T>::set_cols(unsigned int col) noexcept {
-    for (auto& row : this->get_matrix()) {
+    for (auto& row : get_matrix()) {
         row.resize(col);
     }
     return true;
 }
+
+template <Field T>
+constexpr std::vector<Matrix<T>> Matrix<T>::crout_decomposition() {
+    int n = rows();
+    Matrix<T> L(n, n);
+    Matrix<T> U(n, n);
+
+    double sum = 0;
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j <= i; ++j) {
+            double sum = 0;
+            for (int k = 0; k < j; ++k) {
+                sum += L[i][k] * U[k][j];
+            }
+            L[i][j] = get_matrix()[i][j] - sum;
+        }
+        U[i][i] = 1;
+        for (int j = i + 1; j < n; ++j) {
+            sum = 0;
+            for (int k = 0; k < i; ++k) {
+                sum = L[i][k] * U[k][j];
+            }
+            U[i][j] = (get_matrix()[i][j] - sum) / L[i][i];
+        }
+    }
+    std::vector<Matrix<T>> result;
+
+    result.push_back(L);
+    result.push_back(U);
+
+    return result;
+
+}
+
+
+template <Field T>
+constexpr double Matrix<T>::vector_max_diff(const std::vector<T> a, const std::vector<T> b) {
+    int n = a.size();
+    if (n != b.size()) {
+        throw std::invalid_argument("Vector sizes do not match");
+    }
+    double max = -1;
+    for (int i = 0; i < n; ++i) {
+        double diff = std::abs(a[i] - b[i]);
+        if (max < diff) {
+            max = diff;
+        }
+    }
+    return max;
+}
+
+
+template <Field T>
+constexpr std::vector<T> Matrix<T>::jacobi_method(std::vector<T> b, const double eps) {
+    int n = rows();
+    std::vector<T> x(n, 1);
+    std::vector<T> x_prev(n);
+
+    int counter = 1;
+    while (vector_max_diff(x, x_prev) >= eps) {
+        std::cout << counter++  << "-th iteration"<< std::endl;
+        for (int i = 0; i < x.size(); ++i) {
+            std::cout << x[i] << " ";
+        }
+        std::cout << std::endl;
+
+        x_prev = x;
+        for (int i = 0; i < n; ++i) {
+            double sum_1 = 0;
+            double sum_2 = 0;
+            for (int j = 0; j < i; ++j) {
+                sum_1 += get_matrix()[i][j] * x_prev[j];
+            }
+            sum_1 *= -1;
+            for (int j = i + 1; j < n; ++j) {
+                sum_2 += get_matrix()[i][j] * x_prev[j];
+            }
+            sum_2 *= -1;
+            x[i] = (sum_1 + sum_2 + b[i]) / get_matrix()[i][i];
+        }
+    }
+    return x;
+}
+
+
+
+
+
+
+
 
 
 

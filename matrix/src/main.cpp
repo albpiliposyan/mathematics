@@ -5,16 +5,26 @@
 
 int main() {
 
-    // // matrix.print();
-    Matrix<double> a(3,3);
-    std::cout << "Enter 3x3 A:" << std::endl;
-    a.initialize();
 
-    Matrix<double> u = a.cholesky_decomposition();
-    std::cout << std::endl;
+    const int n = 3;
+    const double eps = pow(10, -14);
 
-    std::cout << "U:" << std::endl;
-    u.print();
+    Matrix<double> A(n, n);
+    std::cout << "Enter A matrix:" << std::endl;
+    A.initialize();
+
+    std::vector<double> b(n);
+    std::cout << "Enter b vector:" << std::endl;
+    for (int i = 0; i < b.size(); ++i) {
+        std::cin >> b[i];
+    }
+
+    std::vector<double> solution = A.jacobi_method(b, eps);
+
+    std::cout << "\n\nSolution:" << std::endl;
+    for (int i = 0; i < solution.size(); ++i) {
+        std::cout << solution[i] << " ";
+    }
     std::cout << std::endl;
 
     return 0;
