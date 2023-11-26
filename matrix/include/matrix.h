@@ -71,7 +71,10 @@ public:
     constexpr unsigned int number_of_zero_columns() const noexcept;
     constexpr bool swap_non_zero_rows_to_top() noexcept;
     constexpr bool swap_non_zero_columns_to_left() noexcept;
-    Matrix<T>& reduce_to_row_echelon_form();
+    Matrix<T>& row_reduced_form();
+    Matrix<T>& row_reduced_echelon_form();
+	constexpr Matrix<T> inverse_gauss();
+	constexpr Matrix<T> inverse();
     constexpr std::vector<T> gauss_elimination_method();
     Matrix<T> cholesky_decomposition();
     constexpr std::vector<Matrix<T>> crout_decomposition();
@@ -113,12 +116,6 @@ private:
 };
 
 
-
-
-
-
-
-
 template <Field T>
 constexpr bool Matrix<T>::insert() {
     for (unsigned int i = 0; i < rows(); ++i) {
@@ -138,6 +135,7 @@ constexpr bool Matrix<T>::print() noexcept {
         }
         std::cout << std::endl;
     }
+	std::cout << std::endl;
     return true;
 }
 
@@ -250,7 +248,7 @@ Matrix<T>& Matrix<T>::multiply_row(const unsigned int& row, const T& scalar) {
 
 
 template <Field T>
-Matrix<T>& Matrix<T>::add_multiple_of_row(const unsigned int& row1, 
+Matrix<T>& Matrix<T>::add_multiple_of_row(const unsigned int& row1,
                     const unsigned int& row2, const T& scalar) {
     if (scalar == 0) {
         throw std::invalid_argument("The scalar must be non-zero");
@@ -348,7 +346,7 @@ constexpr unsigned int Matrix<T>::number_of_zero_columns() const noexcept {
 
 
 template <Field T>
-Matrix<T>& Matrix<T>::reduce_to_row_echelon_form() {
+Matrix<T>& Matrix<T>::row_reduced_form() {
     unsigned int zero_rows_count = number_of_zero_rows();
     if (zero_rows_count == rows()) {
         return *this;
@@ -363,7 +361,7 @@ Matrix<T>& Matrix<T>::reduce_to_row_echelon_form() {
 
     for (unsigned int i = 0; i < rows() - zero_rows_count; ++i) {
         for (unsigned int j = i + 1; j < rows() - zero_rows_count; ++j) {
-            if (std::abs(get_matrix()[i][zero_cols_count + i]) < 
+            if (std::abs(get_matrix()[i][zero_cols_count + i]) <
                                     std::abs(get_matrix()[j][zero_cols_count + i])) {
                 swap_rows(i, j);
             }
@@ -372,25 +370,75 @@ Matrix<T>& Matrix<T>::reduce_to_row_echelon_form() {
     for (unsigned int i = 0; i < rows() - zero_rows_count - 1; ++i) {
         for (unsigned int j = i + 1; j < rows() - zero_rows_count; ++j) {
             if (get_matrix()[i][zero_cols_count + i] != 0) {
-                add_multiple_of_row(j, i, (-1) * get_matrix()[j][zero_cols_count + i] / 
+                add_multiple_of_row(j, i, (-1) * get_matrix()[j][zero_cols_count + i] /
                                         get_matrix()[i][zero_cols_count + i]);
             }
         }
     }
     swap_non_zero_rows_to_top();
     swap_non_zero_columns_to_left();
-    // print();
     return *this;
+}
+
+template <Field T>
+Matrix<T>& Matrix<T>::row_reduced_echelon_form() {
+	row_reduced_form();
+    for (int i = 0; i < rows(); ++i) {
+		multiply_row(i, 1 / get_matrix()[i][i]);
+    }
+    return *this;
+}
+
+template <Field T>
+constexpr Matrix<T> Matrix<T>::inverse_gauss() {
+	if (determinant() == 0) {
+		throw std::invalid_argument("The matrix is not invertible.");
+	}
+
+	Matrix<T> tmp(rows(), 2 * rows());
+	for (int i = 0; i < rows(); ++i) {
+		for (int j = 0; j < cols(); ++j) {
+			tmp.get_matrix()[i][j] = get_matrix()[i][j];
+		}
+	}
+	for (int i = 0; i < tmp.rows(); ++i) {
+		tmp.get_matrix()[i][tmp.rows() + i] = 1;
+	}
+
+	tmp.row_reduced_echelon_form();
+
+	for (int i = 0; i < tmp.rows(); ++i) {
+		for (int j = i; j < tmp.rows(); ++j) {
+			if (i != j) {
+				tmp.add_multiple_of_row(i, j, (-1) * tmp.get_matrix()[i][j]
+						/ tmp.get_matrix()[i][i]);
+			}
+		}
+	}
+	Matrix<T> inverse(tmp.rows(), tmp.rows());
+	for (int i = 0; i < inverse.rows(); ++i) {
+		for (int j = 0; j < inverse.cols(); ++j) {
+			inverse.get_matrix()[i][j] = tmp.get_matrix()[i][tmp.rows() + j];
+		}
+	}
+
+	return inverse;
+}
+
+
+template <Field T>
+constexpr Matrix<T> Matrix<T>::inverse() {
+	return inverse_gauss();
 }
 
 
 template <Field T>
 constexpr std::vector<T> Matrix<T>::gauss_elimination_method() {
     Matrix tmp(*this);
-    tmp.reduce_to_row_echelon_form();
+    tmp.row_reduced_form();
     unsigned int zero_rows_count = tmp.number_of_zero_rows();
-    unsigned int zero_cols_count = tmp.number_of_zero_columns();    
-    
+    unsigned int zero_cols_count = tmp.number_of_zero_columns();
+
     unsigned int last_row_check = tmp.rows() - zero_rows_count - 1;
     if (tmp.get_matrix()[last_row_check][tmp.cols() - 2] == 0) {
         std::cerr << "There is no solution for this system of equations." << std::endl;
@@ -400,7 +448,7 @@ constexpr std::vector<T> Matrix<T>::gauss_elimination_method() {
         std::cerr << "There are infinite number of solution to this system of equations" << std::endl;
         return std::vector<T>();
     }
-    
+
     std::vector<T> solution;
     solution.resize(cols() - zero_cols_count - 1);
 
@@ -688,26 +736,21 @@ constexpr std::vector<T> Matrix<T>::upper_triang_equation(const std::vector<T> b
 template <Field T>
 constexpr std::vector<T> Matrix<T>::system_of_equations_lu(const std::vector<T> b) {
     std::vector<Matrix<T>> LU = crout_decomposition();
-    LU[0].print();
-    std::cout << "\n";
-    LU[1].print();
-    std::cout << "\n\n";
     std::vector<T> y = LU[0].lower_triang_equation(b);
     std::vector<T> x = LU[1].upper_triang_equation(y);
 
     return x;
-} 
+}
 
 
 template <Field T>
 constexpr Matrix<T> Matrix<T>::inverse_lu() {
-    std::cout << "determinant is " << determinant() << std::endl;
     if (determinant() == 0) {
         throw std::invalid_argument("The matrix is not invertible");
     }
     const int n = rows();
     Matrix<T> A_inv_t(n, n);
-    
+
     std::vector<T> kronecker_vec(n, 0);
     kronecker_vec[0] = 1;
     for (int i = 0; i < n; ++i) {
@@ -718,7 +761,7 @@ constexpr Matrix<T> Matrix<T>::inverse_lu() {
         }
     }
     Matrix<T> A_inv = A_inv_t.transpose();
-    
+
     return A_inv;
 }
 
