@@ -7,7 +7,7 @@ export INCDIR = -I./include/
 export LIBDIR =                                                                               
 export LIBS =
       
-all: $(EXECUTABLE)
+all: clean $(EXECUTABLE)
 	@#./$(EXECUTABLE)
       
 $(EXECUTABLE): $(OBJECTS) | build
