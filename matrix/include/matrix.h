@@ -457,15 +457,14 @@ constexpr Matrix<T> Matrix<T>:: inverse_adjustment(Matrix<T> X_prev, const unsig
 
 		Matrix<T> prod = (*this) * X_prev;
 		Matrix<T> identity = get_identity();
-		;
 		F_prev = identity - prod;
 
 		F_prev += identity;
 
 		X_k = X_prev * F_prev;
 
-		std::cout << std::endl;
-		X_k.print();
+		// std::cout << std::endl;
+		// X_k.print();
 	}
 
 
