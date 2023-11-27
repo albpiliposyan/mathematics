@@ -1,4 +1,6 @@
-#pragma once
+#ifndef MATRIX_H
+#define MATRIX_H
+
 
 #include <numeric>
 #include <vector>
@@ -57,6 +59,7 @@ public:
 public:
     constexpr bool insert();
     constexpr bool print() noexcept;
+	constexpr Matrix<T> get_identity();
     constexpr T determinant() const;
     Matrix<T>& transpose() noexcept;
     Matrix<T>& swap_rows(const unsigned int& row1, const unsigned int& row2);
@@ -73,7 +76,9 @@ public:
     constexpr bool swap_non_zero_columns_to_left() noexcept;
     Matrix<T>& row_reduced_form();
     Matrix<T>& row_reduced_echelon_form();
+    constexpr Matrix<T> inverse_lu();
 	constexpr Matrix<T> inverse_gauss();
+	constexpr Matrix<T> inverse_adjustment(Matrix<T> X_prev, const unsigned int num_of_iterations);
 	constexpr Matrix<T> inverse();
     constexpr std::vector<T> gauss_elimination_method();
     Matrix<T> cholesky_decomposition();
@@ -82,7 +87,6 @@ public:
     constexpr std::vector<T> lower_triang_equation(const std::vector<T>);
     constexpr std::vector<T> upper_triang_equation(const std::vector<T>);
     constexpr std::vector<T> system_of_equations_lu(const std::vector<T> b);
-    constexpr Matrix<T> inverse_lu();
 public:
     constexpr Matrix<T>& operator=(const Matrix<T>& other) noexcept;
     constexpr Matrix<T>& operator=(const Matrix<T>&& other) noexcept;
@@ -139,6 +143,15 @@ constexpr bool Matrix<T>::print() noexcept {
     return true;
 }
 
+
+template <Field T>
+constexpr Matrix<T> Matrix<T>::get_identity() {
+	Matrix<T> tmp(rows(), rows());
+	for (unsigned int i = 0; i < rows(); ++i) {
+		tmp.get_matrix()[i][i] = 1;
+	}
+	return tmp;
+}
 
 template <Field T>
 constexpr T Matrix<T>::determinant() const {
@@ -429,6 +442,34 @@ constexpr Matrix<T> Matrix<T>::inverse_gauss() {
 template <Field T>
 constexpr Matrix<T> Matrix<T>::inverse() {
 	return inverse_gauss();
+}
+
+
+template <Field T>
+constexpr Matrix<T> Matrix<T>:: inverse_adjustment(Matrix<T> X_prev, const unsigned int num_of_iterations) {
+	const unsigned int n = X_prev.rows();
+
+	Matrix<T> F_prev(n, n);
+	Matrix<T> X_k = X_prev;
+
+	for (int k = 0; k < num_of_iterations; ++k) {
+		X_prev = X_k;
+
+		Matrix<T> prod = (*this) * X_prev;
+		Matrix<T> identity = get_identity();
+		;
+		F_prev = identity - prod;
+
+		F_prev += identity;
+
+		X_k = X_prev * F_prev;
+
+		std::cout << std::endl;
+		X_k.print();
+	}
+
+
+	return X_k;
 }
 
 
@@ -767,3 +808,4 @@ constexpr Matrix<T> Matrix<T>::inverse_lu() {
 
 
 
+#endif // MATRIX_H
