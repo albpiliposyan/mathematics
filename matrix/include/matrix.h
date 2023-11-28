@@ -33,18 +33,22 @@ Matrix<U> operator+(Matrix<U> lhs, const Matrix<U>& rhs) {
 
 
 template <Field U>
- Matrix<U> operator-(Matrix<U> lhs, const Matrix<U>& rhs) {
+Matrix<U> operator-(Matrix<U> lhs, const Matrix<U>& rhs) {
     lhs -= rhs;
     return lhs;
 }
 
 
 template <Field U>
- Matrix<U> operator*(Matrix<U> lhs, const Matrix<U>& rhs) {
+Matrix<U> operator*(Matrix<U> lhs, const Matrix<U>& rhs) {
     lhs *= rhs;
     return lhs;
 }
 
+template <Field U>
+bool operator==(Matrix<U> lhs, const Matrix<U>& rhs) {
+	return lhs.is_equal(rhs);
+}
 
 
 template <Field T>
@@ -74,6 +78,9 @@ public:
     constexpr unsigned int number_of_zero_columns() const noexcept;
     constexpr bool swap_non_zero_rows_to_top() noexcept;
     constexpr bool swap_non_zero_columns_to_left() noexcept;
+	constexpr bool is_equal(const Matrix<T>&);
+
+public:
     Matrix<T>& row_reduced_form();
     Matrix<T>& row_reduced_echelon_form();
     constexpr Matrix<T> inverse_lu();
@@ -87,6 +94,7 @@ public:
     constexpr std::vector<T> lower_triang_equation(const std::vector<T>);
     constexpr std::vector<T> upper_triang_equation(const std::vector<T>);
     constexpr std::vector<T> system_of_equations_lu(const std::vector<T> b);
+
 public:
     constexpr Matrix<T>& operator=(const Matrix<T>& other) noexcept;
     constexpr Matrix<T>& operator=(const Matrix<T>&& other) noexcept;
@@ -95,6 +103,7 @@ public:
     constexpr Matrix<T>& operator*=(const Matrix<T>& rhs);
     constexpr std::vector<T>& operator[](int row) noexcept;
     const constexpr std::vector<T>& operator[](int row) const noexcept;
+
 public:
     template <Field U>
     friend Matrix<U> operator+(Matrix<U> lhs, const Matrix<U>& rhs);
@@ -102,6 +111,9 @@ public:
     friend Matrix<U> operator-(Matrix<U> lhs, const Matrix<U>& rhs);
     template <Field U>
     friend Matrix<U> operator*(Matrix<U> lhs, const Matrix<U>& rhs);
+	template <Field U>
+	friend bool operator==(Matrix<U> lhs, const Matrix<U>& rhs);
+
 public:
     constexpr TwoDVector<T>& get_matrix() noexcept;
     constexpr const TwoDVector<T> get_matrix() const noexcept;
@@ -321,6 +333,21 @@ constexpr bool Matrix<T>::swap_non_zero_columns_to_left() noexcept {
     return true;
 }
 
+
+template <Field T>
+constexpr bool Matrix<T>::is_equal(const Matrix<T>& rhs) {
+	if (rows() != rhs.rows() || cols() != rhs.cols()) {
+		throw std::invalid_argument("Matrix sizes don't match");
+	}
+	for (unsigned int i = 0; i < rows(); ++i) {
+		for (unsigned int j = 0; j < cols(); ++j) {
+			if (get_matrix()[i][j] != rhs.get_matrix()[i][j]) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
 
 template <Field T>
 constexpr unsigned int Matrix<T>::number_of_zero_rows() const noexcept {
@@ -593,10 +620,10 @@ constexpr Matrix<T>& Matrix<T>::operator*=(const Matrix<T>& rhs) {
         for (unsigned int j = 0; j < result.cols(); ++j)
             for (unsigned int k = 0; k < cols(); ++k)
                 result[i][j] += get_matrix()[i][k] * rhs[k][j];
-    // set_matrix(result);
     *this = result;
     return *this;
 }
+
 
 
 template <Field T>
