@@ -23,7 +23,7 @@ mat[1] = {4, 5, 6};
 mat[2] = {7, 8, 9};
 
 // find the determinant
-std::cout << "Determiant: " << mat.determinant() << std::endl; 
+std::cout << "Determiant: " << mat.determinant() << std::endl;
 
 // reduce to row echelon form
 mat.reduceToRowEchelonForm();

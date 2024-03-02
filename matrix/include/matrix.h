@@ -6,6 +6,7 @@
 #include <vector>
 #include <stdexcept>
 #include <cmath>
+#include "../include/helpers.h"
 
 
 template <class T>
@@ -57,52 +58,56 @@ class Matrix
 public:
     Matrix() = default;
     Matrix(int rows, int cols) : m_rows(rows), m_cols(cols),  m_matrix(m_rows, std::vector<T>(m_cols)) {}
-    Matrix(TwoDVector<T> mat) : m_rows(mat.size()), m_cols(mat[0].size()), m_matrix(mat) {}
-    Matrix(const Matrix& other) : m_rows(other.m_rows), m_cols(other.m_cols), m_matrix(other.m_matrix) {}
-    Matrix(const Matrix&& other) : m_rows(std::move(other.m_rows)), m_cols(std::move(other.m_cols)), m_matrix(std::move(other.m_matrix)) {}
+    explicit Matrix(TwoDVector<T> mat) : m_rows(mat.size()), m_cols(mat[0].size()), m_matrix(mat) {}
+    Matrix(const Matrix& other) noexcept : m_rows(other.m_rows), m_cols(other.m_cols), m_matrix(other.m_matrix) {}
+    Matrix(const Matrix&& other) noexcept : m_rows(std::move(other.m_rows)), m_cols(std::move(other.m_cols)), m_matrix(std::move(other.m_matrix)) {}
 public:
-    constexpr bool insert();
-    constexpr bool print() noexcept;
-	constexpr Matrix<T> get_identity();
-    constexpr T determinant() const;
+    bool insert();
+    bool print() noexcept;
+	Matrix<T> get_identity();
+    T determinant() const;
     Matrix<T>& transpose() noexcept;
-    Matrix<T>& swap_rows(const unsigned int& row1, const unsigned int& row2);
-    Matrix<T>& swap_columns(const unsigned int& col1, const unsigned int& col2);
+    Matrix<T>& swap_rows(const int& row1, const  int& row2);
+    Matrix<T>& swap_columns(const int& col1, const  int& col2);
     Matrix<T>& multiply(const T& scalar);
-    Matrix<T>& multiply_row(const unsigned int& row, const T& scalar);
-    Matrix<T>& add_multiple_of_row(const unsigned int& row1,
-                        const unsigned int& row2, const T& scalar);
-    constexpr bool check_zero_row(const unsigned int row) const noexcept;
-    constexpr bool check_zero_column(const unsigned int col) const noexcept;
-    constexpr unsigned int number_of_zero_rows() const noexcept;
-    constexpr unsigned int number_of_zero_columns() const noexcept;
-    constexpr bool swap_non_zero_rows_to_top() noexcept;
-    constexpr bool swap_non_zero_columns_to_left() noexcept;
-	constexpr bool is_equal(const Matrix<T>&);
+    Matrix<T>& multiply_row(const  int& row, const T& scalar);
+    Matrix<T>& add_multiple_of_row(const  int& row1,
+                        const  int& row2, const T& scalar);
+    [[nodiscard]] bool check_zero_row( int row) const noexcept;
+    [[nodiscard]] bool check_zero_column( int col) const noexcept;
+    [[nodiscard]]  int number_of_zero_rows() const noexcept;
+    [[nodiscard]]  int number_of_zero_columns() const noexcept;
+    bool swap_non_zero_rows_to_top() noexcept;
+    bool swap_non_zero_columns_to_left() noexcept;
+	bool is_equal(const Matrix<T>&);
 
 public:
     Matrix<T>& row_reduced_form();
     Matrix<T>& row_reduced_echelon_form();
-    constexpr Matrix<T> inverse_lu();
-	constexpr Matrix<T> inverse_gauss();
-	constexpr Matrix<T> inverse_adjustment(Matrix<T> X_prev, const unsigned int num_of_iterations);
-	constexpr Matrix<T> inverse();
-    constexpr std::vector<T> gauss_elimination_method();
+    Matrix<T> inverse_lu();
+	Matrix<T> inverse_gauss();
+	Matrix<T> inverse_adjustment(Matrix<T> X_prev, int num_of_iterations);
+	Matrix<T> inverse();
+    std::vector<T> gauss_elimination_method();
     Matrix<T> cholesky_decomposition();
-    constexpr std::vector<Matrix<T>> crout_decomposition();
-    constexpr std::vector<T> jacobi_method(std::vector<T>, const double);
-    constexpr std::vector<T> lower_triang_equation(const std::vector<T>);
-    constexpr std::vector<T> upper_triang_equation(const std::vector<T>);
-    constexpr std::vector<T> system_of_equations_lu(const std::vector<T> b);
+    std::vector<Matrix<T>> crout_decomposition();
+    std::vector<T> jacobi_method(std::vector<T>, double);
+    std::vector<T> lower_triang_equation(std::vector<T>);
+    std::vector<T> upper_triang_equation(std::vector<T>);
+    std::vector<T> system_of_equations_lu(std::vector<T> b);
+    Matrix<T> gram_schmidt();
+    std::vector<Matrix<T>> qr_decomposition();
+
+
 
 public:
-    constexpr Matrix<T>& operator=(const Matrix<T>& other) noexcept;
-    constexpr Matrix<T>& operator=(const Matrix<T>&& other) noexcept;
-    constexpr Matrix<T>& operator+=(const Matrix<T>& rhs);
-    constexpr Matrix<T>& operator-=(const Matrix<T>& rhs);
-    constexpr Matrix<T>& operator*=(const Matrix<T>& rhs);
-    constexpr std::vector<T>& operator[](int row) noexcept;
-    const constexpr std::vector<T>& operator[](int row) const noexcept;
+    Matrix<T>& operator=(const Matrix<T>& other) noexcept;
+    Matrix<T>& operator=(const Matrix<T>&& other) noexcept;
+    Matrix<T>& operator+=(const Matrix<T>& rhs);
+    Matrix<T>& operator-=(const Matrix<T>& rhs);
+    Matrix<T>& operator*=(const Matrix<T>& rhs);
+    std::vector<T>& operator[](int row) noexcept;
+    const std::vector<T>& operator[](int row) const noexcept;
 
 public:
     template <Field U>
@@ -115,27 +120,26 @@ public:
 	friend bool operator==(Matrix<U> lhs, const Matrix<U>& rhs);
 
 public:
-    constexpr TwoDVector<T>& get_matrix() noexcept;
-    constexpr const TwoDVector<T> get_matrix() const noexcept;
-    constexpr bool set_matrix(TwoDVector<T> other) noexcept;
-    constexpr unsigned int rows() const noexcept;
-    constexpr unsigned int cols() const noexcept;
-    constexpr bool set_rows(unsigned int row) noexcept;
-    constexpr bool set_cols(unsigned int col) noexcept;
+    TwoDVector<T>& get_matrix() noexcept;
+    const TwoDVector<T> get_matrix() const noexcept;
+    bool set_matrix(TwoDVector<T> other) noexcept;
+    [[nodiscard]] int rows() const noexcept;
+    [[nodiscard]] int cols() const noexcept;
+    bool set_rows(int row) noexcept;
+    bool set_cols(int col) noexcept;
 private:
-    constexpr T cofactor(const unsigned int& row, const unsigned int& col) const;
-    constexpr double vector_max_diff(const std::vector<T>, const std::vector<T>);
+    T cofactor(const int& row, const int& col) const;
 private:
-    unsigned int m_rows;
-    unsigned int m_cols;
+    int m_rows{};
+    int m_cols{};
     TwoDVector<T> m_matrix;
 };
 
 
 template <Field T>
-constexpr bool Matrix<T>::insert() {
-    for (unsigned int i = 0; i < rows(); ++i) {
-        for (unsigned int j = 0; j < cols(); ++j) {
+bool Matrix<T>::insert() {
+    for (int i = 0; i < rows(); ++i) {
+        for (int j = 0; j < cols(); ++j) {
             std::cin >> get_matrix()[i][j];
         }
     }
@@ -144,12 +148,12 @@ constexpr bool Matrix<T>::insert() {
 
 
 template <Field T>
-constexpr bool Matrix<T>::print() noexcept {
+bool Matrix<T>::print() noexcept {
     for (const std::vector<T>& row : get_matrix()) {
         for (const T& element : row) {
-            std::cout << element << " ";
+			std::cout << element << " ";
         }
-        std::cout << std::endl;
+		std::cout << std::endl;
     }
 	std::cout << std::endl;
     return true;
@@ -157,16 +161,16 @@ constexpr bool Matrix<T>::print() noexcept {
 
 
 template <Field T>
-constexpr Matrix<T> Matrix<T>::get_identity() {
+Matrix<T> Matrix<T>::get_identity() {
 	Matrix<T> tmp(rows(), rows());
-	for (unsigned int i = 0; i < rows(); ++i) {
+	for (int i = 0; i < rows(); ++i) {
 		tmp.get_matrix()[i][i] = 1;
 	}
 	return tmp;
 }
 
 template <Field T>
-constexpr T Matrix<T>::determinant() const {
+T Matrix<T>::determinant() const {
     if (rows() != cols()) {
         throw std::invalid_argument("Matrix must be square");
     }
@@ -180,7 +184,7 @@ constexpr T Matrix<T>::determinant() const {
             get_matrix()[0][1] * get_matrix()[1][0];
     }
 
-    for (unsigned int i = 0; i < cols(); ++i) {
+    for (int i = 0; i < cols(); ++i) {
         det += get_matrix()[0][i] * cofactor(0, i);
     }
 
@@ -189,15 +193,15 @@ constexpr T Matrix<T>::determinant() const {
 
 
 template <Field T>
-constexpr T Matrix<T>::cofactor(const unsigned int& row, const unsigned int& col) const {
+T Matrix<T>::cofactor(const int& row, const int& col) const {
     Matrix<T> submatrix(rows() - 1, cols() - 1);
-    int subi = 0, subj = 0;
-    for (unsigned int i = 0; i < rows(); ++i) {
+    int subi = 0, subj;
+    for (int i = 0; i < rows(); ++i) {
         if (i == row) {
             continue;
         }
         subj = 0;
-        for (unsigned int j = 0; j < cols(); ++j) {
+        for (int j = 0; j < cols(); ++j) {
             if (j == col) {
                 continue;
             }
@@ -214,8 +218,8 @@ constexpr T Matrix<T>::cofactor(const unsigned int& row, const unsigned int& col
 template <Field T>
 Matrix<T>& Matrix<T>::transpose() noexcept {
     TwoDVector<T> transposed(cols(), std::vector<T>(rows()));
-    for (unsigned int i = 0; i < rows(); ++i) {
-        for (unsigned int j = 0; j < cols(); ++j) {
+    for (int i = 0; i < rows(); ++i) {
+        for (int j = 0; j < cols(); ++j) {
             transposed[j][i] = get_matrix()[i][j];
         }
     }
@@ -225,7 +229,7 @@ Matrix<T>& Matrix<T>::transpose() noexcept {
 
 
 template <Field T>
-Matrix<T>& Matrix<T>::swap_rows(const unsigned int& row1, const unsigned int& row2) {
+Matrix<T>& Matrix<T>::swap_rows(const int& row1, const int& row2) {
     if (row1 < 0 || row1 >= rows() || row2 < 0 || row2 >= rows())
         throw std::out_of_range("Invalid row index");
     std::swap(get_matrix()[row1], get_matrix()[row2]);
@@ -234,10 +238,10 @@ Matrix<T>& Matrix<T>::swap_rows(const unsigned int& row1, const unsigned int& ro
 
 
 template <Field T>
-Matrix<T>& Matrix<T>::swap_columns(const unsigned int& col1, const unsigned int& col2) {
+Matrix<T>& Matrix<T>::swap_columns(const int& col1, const int& col2) {
     if (col1 < 0 || col1 >= cols() || col2 < 0 || col2 >= cols())
         throw std::out_of_range("Invalid column index");
-    for (unsigned int i = 0; i < rows(); ++i)
+    for (int i = 0; i < rows(); ++i)
         std::swap(m_matrix[i][col1], m_matrix[i][col2]);
     return *this;
 }
@@ -248,8 +252,8 @@ Matrix<T>& Matrix<T>::multiply(const T& scalar) {
     if (scalar == 0) {
         throw std::invalid_argument("The scalar must be non-zero");
     }
-    for (unsigned int i = 0; i < rows(); ++i) {
-        for (unsigned int j = 0; j < cols(); ++j) {
+    for (int i = 0; i < rows(); ++i) {
+        for (int j = 0; j < cols(); ++j) {
             get_matrix()[i][j] *= scalar;
         }
     }
@@ -258,14 +262,14 @@ Matrix<T>& Matrix<T>::multiply(const T& scalar) {
 
 
 template <Field T>
-Matrix<T>& Matrix<T>::multiply_row(const unsigned int& row, const T& scalar) {
+Matrix<T>& Matrix<T>::multiply_row(const int& row, const T& scalar) {
     if (scalar == 0) {
         throw std::invalid_argument("The scalar must be non-zero");
     }
     if (row >= rows()) {
         throw std::invalid_argument("Invalid row index");
     }
-    for (unsigned int i = 0; i < cols(); ++i) {
+    for (int i = 0; i < cols(); ++i) {
         get_matrix()[row][i] *= scalar;
     }
     return *this;
@@ -273,15 +277,15 @@ Matrix<T>& Matrix<T>::multiply_row(const unsigned int& row, const T& scalar) {
 
 
 template <Field T>
-Matrix<T>& Matrix<T>::add_multiple_of_row(const unsigned int& row1,
-                    const unsigned int& row2, const T& scalar) {
+Matrix<T>& Matrix<T>::add_multiple_of_row(const int& row1,
+                    const int& row2, const T& scalar) {
     if (scalar == 0) {
         throw std::invalid_argument("The scalar must be non-zero");
     }
     if (row1 >= rows() || row2 >= rows()) {
         throw std::invalid_argument("Invalid row index");
     }
-    for (unsigned int i = 0; i < cols(); ++i) {
+    for (int i = 0; i < cols(); ++i) {
         get_matrix()[row1][i] += scalar * get_matrix()[row2][i];
     }
     return *this;
@@ -289,8 +293,8 @@ Matrix<T>& Matrix<T>::add_multiple_of_row(const unsigned int& row1,
 
 
 template <Field T>
-constexpr bool Matrix<T>::check_zero_row(const unsigned int row) const noexcept {
-    for (unsigned int i = 0; i < cols(); ++i) {
+bool Matrix<T>::check_zero_row(const int row) const noexcept {
+    for (int i = 0; i < cols(); ++i) {
         if (get_matrix()[row][i] != 0) {
             return false;
         }
@@ -300,8 +304,8 @@ constexpr bool Matrix<T>::check_zero_row(const unsigned int row) const noexcept 
 
 
 template <Field T>
-constexpr bool Matrix<T>::check_zero_column(const unsigned int col) const noexcept{
-    for (unsigned int i = 0; i < rows(); ++i) {
+bool Matrix<T>::check_zero_column(const int col) const noexcept{
+    for (int i = 0; i < rows(); ++i) {
         if (get_matrix()[i][col] != 0) {
             return false;
         }
@@ -311,9 +315,9 @@ constexpr bool Matrix<T>::check_zero_column(const unsigned int col) const noexce
 
 
 template <Field T>
-constexpr bool Matrix<T>::swap_non_zero_rows_to_top() noexcept {
-    unsigned int row_index = rows() - 1;
-    for (unsigned int i = 0; i <= row_index; ++i) {
+bool Matrix<T>::swap_non_zero_rows_to_top() noexcept {
+    int row_index = rows() - 1;
+    for (int i = 0; i <= row_index; ++i) {
         if (check_zero_row(i)) {
             swap_rows(i--, row_index--);
         }
@@ -323,9 +327,9 @@ constexpr bool Matrix<T>::swap_non_zero_rows_to_top() noexcept {
 
 
 template <Field T>
-constexpr bool Matrix<T>::swap_non_zero_columns_to_left() noexcept {
-    unsigned int col_index = 0;
-    for (unsigned int i = cols() - 1; i > col_index; --i) {
+bool Matrix<T>::swap_non_zero_columns_to_left() noexcept {
+    int col_index = 0;
+    for (int i = cols() - 1; i > col_index; --i) {
         if (check_zero_column(i)) {
             swap_columns(i++, col_index++);
         }
@@ -335,12 +339,12 @@ constexpr bool Matrix<T>::swap_non_zero_columns_to_left() noexcept {
 
 
 template <Field T>
-constexpr bool Matrix<T>::is_equal(const Matrix<T>& rhs) {
+bool Matrix<T>::is_equal(const Matrix<T>& rhs) {
 	if (rows() != rhs.rows() || cols() != rhs.cols()) {
 		throw std::invalid_argument("Matrix sizes don't match");
 	}
-	for (unsigned int i = 0; i < rows(); ++i) {
-		for (unsigned int j = 0; j < cols(); ++j) {
+	for (int i = 0; i < rows(); ++i) {
+		for (int j = 0; j < cols(); ++j) {
 			if (get_matrix()[i][j] != rhs.get_matrix()[i][j]) {
 				return false;
 			}
@@ -350,11 +354,11 @@ constexpr bool Matrix<T>::is_equal(const Matrix<T>& rhs) {
 }
 
 template <Field T>
-constexpr unsigned int Matrix<T>::number_of_zero_rows() const noexcept {
-    unsigned int count = 0, row_zeroes;
-    for (unsigned int i = 0; i < rows(); ++i) {
+int Matrix<T>::number_of_zero_rows() const noexcept {
+    int count = 0, row_zeroes;
+    for (int i = 0; i < rows(); ++i) {
         row_zeroes = 0;
-        for (unsigned int j = 0; j < cols(); ++j) {
+        for (int j = 0; j < cols(); ++j) {
             if (get_matrix()[i][j] == 0) {
                 ++row_zeroes;
             }
@@ -368,11 +372,11 @@ constexpr unsigned int Matrix<T>::number_of_zero_rows() const noexcept {
 
 
 template <Field T>
-constexpr unsigned int Matrix<T>::number_of_zero_columns() const noexcept {
-    unsigned int count = 0, col_zeroes;
-    for (unsigned int i = 0; i < cols(); ++i) {
+int Matrix<T>::number_of_zero_columns() const noexcept {
+    int count = 0, col_zeroes;
+    for (int i = 0; i < cols(); ++i) {
         col_zeroes = 0;
-        for (unsigned int j = 0; j < rows(); ++j) {
+        for (int j = 0; j < rows(); ++j) {
             if (get_matrix()[j][i] == 0) {
                 ++col_zeroes;
             }
@@ -387,11 +391,11 @@ constexpr unsigned int Matrix<T>::number_of_zero_columns() const noexcept {
 
 template <Field T>
 Matrix<T>& Matrix<T>::row_reduced_form() {
-    unsigned int zero_rows_count = number_of_zero_rows();
+    int zero_rows_count = number_of_zero_rows();
     if (zero_rows_count == rows()) {
         return *this;
     }
-    unsigned int zero_cols_count = number_of_zero_columns();
+    int zero_cols_count = number_of_zero_columns();
     if (zero_rows_count > 0) {
         swap_non_zero_rows_to_top();
     }
@@ -399,16 +403,16 @@ Matrix<T>& Matrix<T>::row_reduced_form() {
         swap_non_zero_columns_to_left();
     }
 
-    for (unsigned int i = 0; i < rows() - zero_rows_count; ++i) {
-        for (unsigned int j = i + 1; j < rows() - zero_rows_count; ++j) {
+    for (int i = 0; i < rows() - zero_rows_count; ++i) {
+        for (int j = i + 1; j < rows() - zero_rows_count; ++j) {
             if (std::abs(get_matrix()[i][zero_cols_count + i]) <
                                     std::abs(get_matrix()[j][zero_cols_count + i])) {
                 swap_rows(i, j);
             }
         }
     }
-    for (unsigned int i = 0; i < rows() - zero_rows_count - 1; ++i) {
-        for (unsigned int j = i + 1; j < rows() - zero_rows_count; ++j) {
+    for (int i = 0; i < rows() - zero_rows_count - 1; ++i) {
+        for (int j = i + 1; j < rows() - zero_rows_count; ++j) {
             if (get_matrix()[i][zero_cols_count + i] != 0) {
                 add_multiple_of_row(j, i, (-1) * get_matrix()[j][zero_cols_count + i] /
                                         get_matrix()[i][zero_cols_count + i]);
@@ -430,7 +434,7 @@ Matrix<T>& Matrix<T>::row_reduced_echelon_form() {
 }
 
 template <Field T>
-constexpr Matrix<T> Matrix<T>::inverse_gauss() {
+Matrix<T> Matrix<T>::inverse_gauss() {
 	if (determinant() == 0) {
 		throw std::invalid_argument("The matrix is not invertible.");
 	}
@@ -467,14 +471,14 @@ constexpr Matrix<T> Matrix<T>::inverse_gauss() {
 
 
 template <Field T>
-constexpr Matrix<T> Matrix<T>::inverse() {
+Matrix<T> Matrix<T>::inverse() {
 	return inverse_gauss();
 }
 
 
 template <Field T>
-constexpr Matrix<T> Matrix<T>:: inverse_adjustment(Matrix<T> X_prev, const unsigned int num_of_iterations) {
-	const unsigned int n = X_prev.rows();
+Matrix<T> Matrix<T>::inverse_adjustment(Matrix<T> X_prev, int num_of_iterations) {
+	const int n = X_prev.rows();
 
 	Matrix<T> F_prev(n, n);
 	Matrix<T> X_k = X_prev;
@@ -489,9 +493,6 @@ constexpr Matrix<T> Matrix<T>:: inverse_adjustment(Matrix<T> X_prev, const unsig
 		F_prev += identity;
 
 		X_k = X_prev * F_prev;
-
-		// std::cout << std::endl;
-		// X_k.print();
 	}
 
 
@@ -500,13 +501,13 @@ constexpr Matrix<T> Matrix<T>:: inverse_adjustment(Matrix<T> X_prev, const unsig
 
 
 template <Field T>
-constexpr std::vector<T> Matrix<T>::gauss_elimination_method() {
+std::vector<T> Matrix<T>::gauss_elimination_method() {
     Matrix tmp(*this);
     tmp.row_reduced_form();
-    unsigned int zero_rows_count = tmp.number_of_zero_rows();
-    unsigned int zero_cols_count = tmp.number_of_zero_columns();
+    int zero_rows_count = tmp.number_of_zero_rows();
+    int zero_cols_count = tmp.number_of_zero_columns();
 
-    unsigned int last_row_check = tmp.rows() - zero_rows_count - 1;
+    int last_row_check = tmp.rows() - zero_rows_count - 1;
     if (tmp.get_matrix()[last_row_check][tmp.cols() - 2] == 0) {
         std::cerr << "There is no solution for this system of equations." << std::endl;
         return std::vector<T>();
@@ -519,9 +520,9 @@ constexpr std::vector<T> Matrix<T>::gauss_elimination_method() {
     std::vector<T> solution;
     solution.resize(cols() - zero_cols_count - 1);
 
-    for (unsigned int i = tmp.rows() - zero_rows_count - 1; i >= 0 && i <= tmp.rows(); --i) {
+    for (int i = tmp.rows() - zero_rows_count - 1; i >= 0 && i <= tmp.rows(); --i) {
         solution[i] = tmp.get_matrix()[i][zero_cols_count + solution.size()];
-        for (unsigned int j = i + 1; j < solution.size(); ++j) {
+        for (int j = i + 1; j < solution.size(); ++j) {
             if (i != j) {
                 solution[i] -=  solution[j] * tmp.get_matrix()[i][zero_cols_count + j];
             }
@@ -568,7 +569,7 @@ Matrix<T> Matrix<T>::cholesky_decomposition() {
 
 
 template <Field T>
-constexpr Matrix<T>& Matrix<T>::operator=(const Matrix<T>& other) noexcept {
+Matrix<T>& Matrix<T>::operator=(const Matrix<T>& other) noexcept {
     if (this != &other) {
         m_matrix = other.m_matrix;
     }
@@ -577,7 +578,7 @@ constexpr Matrix<T>& Matrix<T>::operator=(const Matrix<T>& other) noexcept {
 
 
 template <Field T>
-constexpr Matrix<T>& Matrix<T>::operator=(const Matrix<T>&& other) noexcept {
+Matrix<T>& Matrix<T>::operator=(const Matrix<T>&& other) noexcept {
     if (this != &other) {
         m_matrix = other.m_matrix;
     }
@@ -586,11 +587,11 @@ constexpr Matrix<T>& Matrix<T>::operator=(const Matrix<T>&& other) noexcept {
 
 
 template <Field T>
-constexpr Matrix<T>& Matrix<T>::operator+=(const Matrix<T>& rhs) {
+Matrix<T>& Matrix<T>::operator+=(const Matrix<T>& rhs) {
     if (rows() != rhs.rows() || cols() != rhs.cols())
         throw std::invalid_argument("Matrix sizes don't match");
-    for (unsigned int i = 0; i < rows(); ++i) {
-        for (unsigned int j = 0; j < cols(); ++j) {
+    for (int i = 0; i < rows(); ++i) {
+        for (int j = 0; j < cols(); ++j) {
             get_matrix()[i][j] += rhs[i][j];
         }
     }
@@ -599,11 +600,11 @@ constexpr Matrix<T>& Matrix<T>::operator+=(const Matrix<T>& rhs) {
 
 
 template <Field T>
-constexpr Matrix<T>& Matrix<T>::operator-=(const Matrix<T>& rhs) {
+Matrix<T>& Matrix<T>::operator-=(const Matrix<T>& rhs) {
     if (rows() != rhs.rows() || cols() != rhs.cols())
         throw std::invalid_argument("Matrix sizes don't match");
-    for (unsigned int i = 0; i < rows(); ++i) {
-        for (unsigned int j = 0; j < cols(); ++j) {
+    for (int i = 0; i < rows(); ++i) {
+        for (int j = 0; j < cols(); ++j) {
             get_matrix()[i][j] -= rhs[i][j];
         }
     }
@@ -612,13 +613,13 @@ constexpr Matrix<T>& Matrix<T>::operator-=(const Matrix<T>& rhs) {
 
 
 template <Field T>
-constexpr Matrix<T>& Matrix<T>::operator*=(const Matrix<T>& rhs) {
+Matrix<T>& Matrix<T>::operator*=(const Matrix<T>& rhs) {
     if (rows() != rhs.cols())
         throw std::invalid_argument("Matrix sizes don't match");
     Matrix<T> result(rows(), rhs.cols());
-    for (unsigned int i = 0; i < result.rows(); ++i)
-        for (unsigned int j = 0; j < result.cols(); ++j)
-            for (unsigned int k = 0; k < cols(); ++k)
+    for (int i = 0; i < result.rows(); ++i)
+        for (int j = 0; j < result.cols(); ++j)
+            for (int k = 0; k < cols(); ++k)
                 result[i][j] += get_matrix()[i][k] * rhs[k][j];
     *this = result;
     return *this;
@@ -627,57 +628,57 @@ constexpr Matrix<T>& Matrix<T>::operator*=(const Matrix<T>& rhs) {
 
 
 template <Field T>
-constexpr std::vector<T>& Matrix<T>::operator[](int row) noexcept {
+std::vector<T>& Matrix<T>::operator[](int row) noexcept {
     return m_matrix[row];
 }
 
 
 template <Field T>
-const constexpr std::vector<T>& Matrix<T>::operator[](int row) const noexcept {
+const std::vector<T>& Matrix<T>::operator[](int row) const noexcept {
     return m_matrix[row];
 }
 
 
 template <Field T>
-constexpr TwoDVector<T>& Matrix<T>::get_matrix() noexcept {
+TwoDVector<T>& Matrix<T>::get_matrix() noexcept {
     return m_matrix;
 }
 
 
 template <Field T>
-constexpr const TwoDVector<T> Matrix<T>::get_matrix() const noexcept {
+const TwoDVector<T> Matrix<T>::get_matrix() const noexcept {
     return m_matrix;
 }
 
 
 template <Field T>
-constexpr bool Matrix<T>::set_matrix(TwoDVector<T> other)  noexcept {
+bool Matrix<T>::set_matrix(TwoDVector<T> other)  noexcept {
     m_matrix = std::move(other);
     return true;
 }
 
 
 template <Field T>
-constexpr unsigned int Matrix<T>::rows() const noexcept {
+int Matrix<T>::rows() const noexcept {
     return m_rows;
 }
 
 
 template <Field T>
-constexpr unsigned int Matrix<T>::cols() const noexcept {
+int Matrix<T>::cols() const noexcept {
     return m_cols;
 }
 
 
 template <Field T>
-constexpr bool Matrix<T>::set_rows(unsigned int row) noexcept {
+bool Matrix<T>::set_rows(int row) noexcept {
     get_matrix().resize(row);
     return true;
 }
 
 
 template <Field T>
-constexpr bool Matrix<T>::set_cols(unsigned int col) noexcept {
+bool Matrix<T>::set_cols(int col) noexcept {
     for (auto& row : get_matrix()) {
         row.resize(col);
     }
@@ -685,7 +686,7 @@ constexpr bool Matrix<T>::set_cols(unsigned int col) noexcept {
 }
 
 template <Field T>
-constexpr std::vector<Matrix<T>> Matrix<T>::crout_decomposition() {
+std::vector<Matrix<T>> Matrix<T>::crout_decomposition() {
     int n = rows();
     Matrix<T> L(n, n);
     Matrix<T> U(n, n);
@@ -693,7 +694,7 @@ constexpr std::vector<Matrix<T>> Matrix<T>::crout_decomposition() {
     double sum = 0;
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j <= i; ++j) {
-            double sum = 0;
+            sum = 0;
             for (int k = 0; k < j; ++k) {
                 sum += L[i][k] * U[k][j];
             }
@@ -718,24 +719,7 @@ constexpr std::vector<Matrix<T>> Matrix<T>::crout_decomposition() {
 
 
 template <Field T>
-constexpr double Matrix<T>::vector_max_diff(const std::vector<T> a, const std::vector<T> b) {
-    int n = a.size();
-    if (n != b.size()) {
-        throw std::invalid_argument("Vector sizes do not match");
-    }
-    double max = -1;
-    for (int i = 0; i < n; ++i) {
-        double diff = std::abs(a[i] - b[i]);
-        if (max < diff) {
-            max = diff;
-        }
-    }
-    return max;
-}
-
-
-template <Field T>
-constexpr std::vector<T> Matrix<T>::jacobi_method(std::vector<T> b, const double eps) {
+std::vector<T> Matrix<T>::jacobi_method(std::vector<T> b, const double eps) {
     int n = rows();
     std::vector<T> x(n, 1);
     std::vector<T> x_prev(n);
@@ -768,7 +752,7 @@ constexpr std::vector<T> Matrix<T>::jacobi_method(std::vector<T> b, const double
 
 
 template <Field T>
-constexpr std::vector<T> Matrix<T>::lower_triang_equation(const std::vector<T> b) {
+std::vector<T> Matrix<T>::lower_triang_equation(const std::vector<T> b) {
     const int n = b.size();
     std::vector<T> solution(n, 0);
 
@@ -786,7 +770,7 @@ constexpr std::vector<T> Matrix<T>::lower_triang_equation(const std::vector<T> b
 
 
 template <Field T>
-constexpr std::vector<T> Matrix<T>::upper_triang_equation(const std::vector<T> b) {
+std::vector<T> Matrix<T>::upper_triang_equation(const std::vector<T> b) {
     const int n = b.size();
     std::vector<T> solution(n, 0);
 
@@ -801,7 +785,7 @@ constexpr std::vector<T> Matrix<T>::upper_triang_equation(const std::vector<T> b
 }
 
 template <Field T>
-constexpr std::vector<T> Matrix<T>::system_of_equations_lu(const std::vector<T> b) {
+std::vector<T> Matrix<T>::system_of_equations_lu(const std::vector<T> b) {
     std::vector<Matrix<T>> LU = crout_decomposition();
     std::vector<T> y = LU[0].lower_triang_equation(b);
     std::vector<T> x = LU[1].upper_triang_equation(y);
@@ -811,7 +795,7 @@ constexpr std::vector<T> Matrix<T>::system_of_equations_lu(const std::vector<T> 
 
 
 template <Field T>
-constexpr Matrix<T> Matrix<T>::inverse_lu() {
+Matrix<T> Matrix<T>::inverse_lu() {
     if (determinant() == 0) {
         throw std::invalid_argument("The matrix is not invertible");
     }
@@ -830,6 +814,58 @@ constexpr Matrix<T> Matrix<T>::inverse_lu() {
     Matrix<T> A_inv = A_inv_t.transpose();
 
     return A_inv;
+}
+
+
+template <Field T>
+Matrix<T> Matrix<T>::gram_schmidt() { // Gram-Schmidt orthogonalization for rows
+    const int n = rows();
+    const int m = cols();
+
+    for (int i = 0; i < n; ++i) {
+        T norm = vector_norm(get_matrix()[i]);
+        for (int k = 0; k < m; ++k) {
+            get_matrix()[i][k] /= norm;
+        }
+
+        for (int j = i + 1; j < n; ++j) {
+            T dp = dot_product(get_matrix()[i], get_matrix()[j]);
+            for (int k = 0; k < m; ++k) {
+                get_matrix()[j][k] -= dp * get_matrix()[i][k];
+            }
+        }
+    }
+
+    return *this;
+}
+
+
+template <Field T>
+std::vector<Matrix<T>> Matrix<T>::qr_decomposition() {
+    Matrix<T> matrix_t = this->transpose();
+
+    const int n = matrix_t.rows();
+    const int m = matrix_t.cols();
+
+    Matrix<T> Q(n, n);
+    Matrix<T> R(n, n);
+
+    for (int i = 0; i < n; ++i) {
+        R[i][i] = vector_norm(matrix_t[i]);
+        for (int k = 0; k < m; ++k) {
+            matrix_t[i][k] /= R[i][i];
+        }
+
+        for (int j = i + 1; j < n; ++j) {
+            R[i][j] = dot_product(matrix_t[i], matrix_t[j]);
+            for (int k = 0; k < m; ++k) {
+                matrix_t[j][k] -= R[i][j] * matrix_t[i][k];
+            }
+        }
+    }
+    Q = matrix_t.transpose();
+
+    return {Q, R};
 }
 
 
