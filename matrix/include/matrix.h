@@ -1,12 +1,15 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
-
 #include <numeric>
 #include <vector>
 #include <stdexcept>
 #include <cmath>
-#include "../include/helpers.h"
+#include <iomanip>
+#include "helpers.h"
+
+
+const int precision = 10;
 
 
 template <class T>
@@ -60,23 +63,23 @@ public:
     Matrix(int rows, int cols) : m_rows(rows), m_cols(cols),  m_matrix(m_rows, std::vector<T>(m_cols)) {}
     explicit Matrix(TwoDVector<T> mat) : m_rows(mat.size()), m_cols(mat[0].size()), m_matrix(mat) {}
     Matrix(const Matrix& other) noexcept : m_rows(other.m_rows), m_cols(other.m_cols), m_matrix(other.m_matrix) {}
-    Matrix(const Matrix&& other) noexcept : m_rows(std::move(other.m_rows)), m_cols(std::move(other.m_cols)), m_matrix(std::move(other.m_matrix)) {}
+    Matrix(Matrix&& other) noexcept : m_rows(std::move(other.m_rows)), m_cols(std::move(other.m_cols)), m_matrix(std::move(other.m_matrix)) {}
 public:
     bool insert();
     bool print() noexcept;
 	Matrix<T> get_identity();
     T determinant() const;
     Matrix<T>& transpose() noexcept;
-    Matrix<T>& swap_rows(const int& row1, const  int& row2);
-    Matrix<T>& swap_columns(const int& col1, const  int& col2);
+    Matrix<T>& swap_rows(const int& row1, const int& row2);
+    Matrix<T>& swap_columns(const int& col1, const int& col2);
     Matrix<T>& multiply(const T& scalar);
-    Matrix<T>& multiply_row(const  int& row, const T& scalar);
-    Matrix<T>& add_multiple_of_row(const  int& row1,
-                        const  int& row2, const T& scalar);
-    [[nodiscard]] bool check_zero_row( int row) const noexcept;
-    [[nodiscard]] bool check_zero_column( int col) const noexcept;
-    [[nodiscard]]  int number_of_zero_rows() const noexcept;
-    [[nodiscard]]  int number_of_zero_columns() const noexcept;
+    Matrix<T>& multiply_row(const int& row, const T& scalar);
+    Matrix<T>& add_multiple_of_row(const int& row1,
+                        const int& row2, const T& scalar);
+    [[nodiscard]] bool check_zero_row(int row) const noexcept;
+    [[nodiscard]] bool check_zero_column(int col) const noexcept;
+    [[nodiscard]] int number_of_zero_rows() const noexcept;
+    [[nodiscard]] int number_of_zero_columns() const noexcept;
     bool swap_non_zero_rows_to_top() noexcept;
     bool swap_non_zero_columns_to_left() noexcept;
 	bool is_equal(const Matrix<T>&);
@@ -92,17 +95,15 @@ public:
     Matrix<T> cholesky_decomposition();
     std::vector<Matrix<T>> crout_decomposition();
     std::vector<T> jacobi_method(std::vector<T>, double);
-    std::vector<T> lower_triang_equation(std::vector<T>);
-    std::vector<T> upper_triang_equation(std::vector<T>);
+    std::vector<T> lower_triangular_equation(std::vector<T>);
+    std::vector<T> upper_triangular_equation(std::vector<T>);
     std::vector<T> system_of_equations_lu(std::vector<T> b);
     Matrix<T> gram_schmidt();
     std::vector<Matrix<T>> qr_decomposition();
 
-
-
 public:
     Matrix<T>& operator=(const Matrix<T>& other) noexcept;
-    Matrix<T>& operator=(const Matrix<T>&& other) noexcept;
+    Matrix<T>& operator=(Matrix<T>&& other) noexcept;
     Matrix<T>& operator+=(const Matrix<T>& rhs);
     Matrix<T>& operator-=(const Matrix<T>& rhs);
     Matrix<T>& operator*=(const Matrix<T>& rhs);
@@ -125,8 +126,8 @@ public:
     bool set_matrix(TwoDVector<T> other) noexcept;
     [[nodiscard]] int rows() const noexcept;
     [[nodiscard]] int cols() const noexcept;
-    bool set_rows(int row) noexcept;
-    bool set_cols(int col) noexcept;
+    bool set_rows_num(int row) noexcept;
+    bool set_cols_num(int col) noexcept;
 private:
     T cofactor(const int& row, const int& col) const;
 private:
@@ -151,9 +152,9 @@ template <Field T>
 bool Matrix<T>::print() noexcept {
     for (const std::vector<T>& row : get_matrix()) {
         for (const T& element : row) {
-			std::cout << element << " ";
+            std::cout << std::setprecision(precision) <<  element << " ";
         }
-		std::cout << std::endl;
+        std::cout << std::endl;
     }
 	std::cout << std::endl;
     return true;
@@ -195,20 +196,20 @@ T Matrix<T>::determinant() const {
 template <Field T>
 T Matrix<T>::cofactor(const int& row, const int& col) const {
     Matrix<T> submatrix(rows() - 1, cols() - 1);
-    int subi = 0, subj;
+    int ix = 0, jx = 0;
     for (int i = 0; i < rows(); ++i) {
         if (i == row) {
             continue;
         }
-        subj = 0;
+        jx = 0;
         for (int j = 0; j < cols(); ++j) {
             if (j == col) {
                 continue;
             }
-            submatrix[subi][subj] = get_matrix()[i][j];
-            ++subj;
+            submatrix[ix][jx] = get_matrix()[i][j];
+            ++jx;
         }
-        ++subi;
+        ++ix;
     }
     T det = submatrix.determinant();
     return ((row + col) % 2 == 0 ? 1 : -1) * det;
@@ -542,7 +543,6 @@ Matrix<T> Matrix<T>::cholesky_decomposition() {
     Matrix<T> U(n, n);
 
     U.get_matrix()[0][0] = sqrt(get_matrix()[0][0]);
-
     for (int i = 1; i < n; ++i) {
         U.get_matrix()[0][i] = get_matrix()[0][i] / U.get_matrix()[0][0];
     }
@@ -578,7 +578,7 @@ Matrix<T>& Matrix<T>::operator=(const Matrix<T>& other) noexcept {
 
 
 template <Field T>
-Matrix<T>& Matrix<T>::operator=(const Matrix<T>&& other) noexcept {
+Matrix<T>& Matrix<T>::operator=(Matrix<T>&& other) noexcept {
     if (this != &other) {
         m_matrix = other.m_matrix;
     }
@@ -671,14 +671,14 @@ int Matrix<T>::cols() const noexcept {
 
 
 template <Field T>
-bool Matrix<T>::set_rows(int row) noexcept {
+bool Matrix<T>::set_rows_num(int row) noexcept {
     get_matrix().resize(row);
     return true;
 }
 
 
 template <Field T>
-bool Matrix<T>::set_cols(int col) noexcept {
+bool Matrix<T>::set_cols_num(int col) noexcept {
     for (auto& row : get_matrix()) {
         row.resize(col);
     }
@@ -724,14 +724,7 @@ std::vector<T> Matrix<T>::jacobi_method(std::vector<T> b, const double eps) {
     std::vector<T> x(n, 1);
     std::vector<T> x_prev(n);
 
-    int counter = 1;
     while (vector_max_diff(x, x_prev) >= eps) {
-        std::cout << counter++  << "-th iteration"<< std::endl;
-        for (int i = 0; i < x.size(); ++i) {
-            std::cout << x[i] << " ";
-        }
-        std::cout << std::endl;
-
         x_prev = x;
         for (int i = 0; i < n; ++i) {
             double sum_1 = 0;
@@ -752,7 +745,7 @@ std::vector<T> Matrix<T>::jacobi_method(std::vector<T> b, const double eps) {
 
 
 template <Field T>
-std::vector<T> Matrix<T>::lower_triang_equation(const std::vector<T> b) {
+std::vector<T> Matrix<T>::lower_triangular_equation(const std::vector<T> b) {
     const int n = b.size();
     std::vector<T> solution(n, 0);
 
@@ -770,7 +763,7 @@ std::vector<T> Matrix<T>::lower_triang_equation(const std::vector<T> b) {
 
 
 template <Field T>
-std::vector<T> Matrix<T>::upper_triang_equation(const std::vector<T> b) {
+std::vector<T> Matrix<T>::upper_triangular_equation(const std::vector<T> b) {
     const int n = b.size();
     std::vector<T> solution(n, 0);
 
@@ -787,8 +780,8 @@ std::vector<T> Matrix<T>::upper_triang_equation(const std::vector<T> b) {
 template <Field T>
 std::vector<T> Matrix<T>::system_of_equations_lu(const std::vector<T> b) {
     std::vector<Matrix<T>> LU = crout_decomposition();
-    std::vector<T> y = LU[0].lower_triang_equation(b);
-    std::vector<T> x = LU[1].upper_triang_equation(y);
+    std::vector<T> y = LU[0].lower_triangular_equation(b);
+    std::vector<T> x = LU[1].upper_triangular_equation(y);
 
     return x;
 }
